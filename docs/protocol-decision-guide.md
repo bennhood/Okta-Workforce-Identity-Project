@@ -1,5 +1,5 @@
 ---
-SP vs IdP / When/Why to use SAML
+SP vs IdP initiated SAML & When/Why to use SAML (Compared to OIDC)
 ---
 
 <img width="1216" height="1294" alt="1  saml_decision graph" src="https://github.com/user-attachments/assets/a0c9734d-8367-404d-976c-a0ed89e7a940" />
