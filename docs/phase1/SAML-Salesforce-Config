@@ -1,0 +1,127 @@
+# SAML 2.0 SSO Configuration: Okta → Salesforce
+
+This document covers the end-to-end configuration of SAML 2.0 Single Sign-On between Okta (Identity Provider) and Salesforce Developer Edition (Service Provider), including both SP-initiated and IdP-initiated flows.
+
+---
+
+## Overview
+
+| Setting | Value |
+|---|---|
+| Protocol | SAML 2.0 |
+| Identity Provider | Okta (`integrator-1186065.okta.com`) |
+| Service Provider | Salesforce Developer Edition |
+| SP Entity ID | `https://orgfarm-111b99ecc1-dev-ed.develop.my.salesforce.com` |
+| ACS URL | `https://orgfarm-111b99ecc1-dev-ed.develop.my.salesforce.com` |
+| SAML Identity Type | Username |
+| SAML Identity Location | NameIdentifier element of Subject statement |
+| Binding | HTTP POST |
+
+---
+
+## Step 1 — Add Salesforce App in Okta
+
+The Okta Integration Network (OIN) provides a pre-built Salesforce.com SAML integration, eliminating the need to manually configure the XML metadata.
+
+1. Okta Admin Console → **Applications → Browse App Catalog**
+2. Search **"Salesforce.com"** → select the production integration
+3. Set Instance Type to **Production**
+4. Enter Custom Domain: `orgfarm-111b99ecc1-dev-ed.develop`
+5. Select **SAML 2.0** as the sign-on method
+
+SS: Salesforce SAML
+
+---
+
+## Step 2 — Note Okta IdP Metadata
+
+After adding the app, Okta generates the following values required by Salesforce:
+
+| Okta Field | Value |
+|---|---|
+| Sign on URL (IdP SSO URL) | `https://integrator-1186065.okta.com/app/salesforce/{appId}/sso/saml` |
+| Issuer | App instance ID |
+| Signing Certificate | Downloaded from Okta General tab |
+
+> **[SCREENSHOT: Okta Salesforce app Sign On tab showing metadata values]**
+
+---
+
+## Step 3 — Configure Salesforce SSO Settings
+
+In Salesforce, a new SSO configuration was created under **Setup → Single Sign-On Settings**:
+
+| Salesforce Field | Value |
+|---|---|
+| Name | Okta |
+| SAML Version | 2.0 |
+| Issuer | Okta app instance ID |
+| Entity ID | Salesforce My Domain URL |
+| Identity Provider Certificate | Okta signing certificate (.cert) |
+| SAML Identity Type | Username |
+| SAML Identity Location | Subject NameIdentifier |
+| Identity Provider Login URL | Okta Sign on URL |
+| Service Provider Initiated Binding | HTTP POST |
+
+> **[SCREENSHOT: Salesforce Single Sign-On Settings page showing completed Okta configuration]**
+
+---
+
+## Step 4 — Configure My Domain Authentication
+
+To enforce SSO and redirect all login traffic through Okta:
+
+1. Salesforce Setup → **My Domain → Authentication Configuration → Edit**
+2. Unchecked **Login Form**
+3. Checked **Okta** as the sole authentication service
+
+This ensures SP-initiated flows redirect to Okta rather than presenting the native Salesforce login page.
+
+---
+
+## Step 5 — Assign User in Okta
+
+The Okta user was assigned to the Salesforce app with the Salesforce username mapped explicitly:
+
+- **Okta username:** `benhoodlab@contractor.net`
+- **Salesforce username:** `ben.n.hood.03a6b6d8ecfd@agentforce.com`
+
+This mapping is required because Salesforce Developer Edition auto-generates usernames that differ from the user's email address. The Okta app assignment bridges this via the NameID attribute in the SAML assertion.
+
+> **[SCREENSHOT: Okta Salesforce app Assignments tab showing user assigned]**
+
+---
+
+## Testing Both Flows
+
+### SP-Initiated Flow
+1. Navigate directly to the Salesforce My Domain URL in an incognito browser
+2. Salesforce detects no active session and redirects to Okta for authentication
+3. User authenticates via Okta
+4. Okta posts a signed SAML assertion to the Salesforce ACS URL
+5. Salesforce validates the assertion and establishes a session
+
+### IdP-Initiated Flow
+1. User navigates directly to the Okta SSO URL for the Salesforce app
+2. Okta generates and posts a SAML assertion to Salesforce without an SP-initiated `AuthnRequest`
+3. Salesforce validates and establishes a session
+
+---
+
+## Evidence
+
+### Okta System Log — Successful SSO Event
+
+> **[SCREENSHOT: Okta System Log showing successful `user.authentication.sso` event for Salesforce, with Actor: Benjamin Hood]**
+
+### Salesforce Login History — Successful Authentication
+
+> **[SCREENSHOT: Salesforce Login History showing `Application / Success` entry for `ben.n.hood.03a6b6d8ecfd@agentforce.com`]**
+
+---
+
+## Notes
+
+The Salesforce org used in this lab was provisioned via OrgFarm, which introduces a managed org restriction on the post-SSO landing page — resulting in an "Insufficient Privileges" error on the default redirect target. This is an org-level restriction unrelated to the SAML configuration. Both the Okta System Log and Salesforce Login History confirm successful authentication, and the SAML assertion is accepted by Salesforce in both flow directions.
+
+In a standard Salesforce Developer Edition org (direct signup), this restriction does not apply.
