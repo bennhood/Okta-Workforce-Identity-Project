@@ -36,7 +36,7 @@ The IP ranges used correspond to the lab environment's home network. In a produc
 
 Zones are not marked as "trusted" via a toggle - trust is expressed through Authentication Policy rules that reference the zone. A rule that permits password-only authentication when the user's IP matches a zone is what makes that zone functionally trusted.
 
-This is covered in detail in [`auth-policy-design.md`](./auth-policy-design.md).
+This is covered in detail in [`auth-policy-design.md`](Okta-IAM-Lab/blob/main/docs/Phase-2/Auth-Policy-Design.md).
 
 ---
 
