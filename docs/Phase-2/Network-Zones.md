@@ -1,0 +1,48 @@
+# Network Zones
+
+This document covers the configuration of Okta Network Zones used as the primary trust boundary in the AcmeCorp adaptive MFA policy.
+
+---
+
+## Overview
+
+Network zones in Okta define named IP ranges that can be referenced in Authentication Policy rules to apply different authentication requirements based on a user's network context. They are the foundational building block of risk-based conditional access.
+
+---
+
+## Zones Configured
+
+| Zone Name | Type | Purpose | Trust Level |
+|---|---|---|---|
+| AcmeCorp Office | IP Zone | Simulates corporate office network | Trusted |
+| AcmeCorp VPN | IP Zone | Simulates corporate VPN range | Trusted |
+
+<img width="1764" height="1271" alt="AcmeCorp Office TrustedIP ZoneZ" src="https://github.com/user-attachments/assets/ee9ccb17-164b-401a-aa9f-a93830d6859b" />
+
+---
+
+## Configuration
+
+Both zones were created under **Security → Networks → Add Zone → IP Zone**.
+
+The IP ranges used correspond to the lab environment's home network. In a production deployment these would be replaced with:
+- Static egress IPs for corporate office locations
+- VPN gateway IP ranges (e.g. Cisco AnyConnect, Zscaler, GlobalProtect)
+- Dedicated MPLS circuit addresses for branch offices
+
+---
+
+## How Zones Are Used
+
+Zones are not marked as "trusted" via a toggle - trust is expressed through Authentication Policy rules that reference the zone. A rule that permits password-only authentication when the user's IP matches a zone is what makes that zone functionally trusted.
+
+This is covered in detail in [`auth-policy-design.md`](./auth-policy-design.md).
+
+---
+
+## Production Considerations
+
+In a production environment, network zones would be supplemented with:
+- **Dynamic zones** using ASN or geolocation blocking (e.g. block all non-UK traffic)
+- **Blocklist zones** for known malicious IP ranges
+- **ThreatInsight integration** to automatically flag suspicious IPs based on Okta's threat intelligence feed
