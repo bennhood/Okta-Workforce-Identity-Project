@@ -1,1 +1,211 @@
+# Authentication Policy Design: AcmeCorp Global Policy
 
+This document covers the design, configuration, and testing of the AcmeCorp Global Policy - a risk-based, tiered authentication policy applied to the AcmeCorp Internal Portal OIDC application.
+
+---
+
+## Policy Overview
+
+| Setting | Value |
+|---|---|
+| Policy Name | Acmecorp Global Policy |
+| Policy Type | App Sign-On (ACCESS_POLICY) |
+| Applied To | AcmeCorp Internal Portal |
+| Policy ID | rst13qmf3fucyfHch698 |
+| Description | Risk-based authentication policy enforcing tiered MFA requirements based on network zone and device context |
+
+---
+
+## Understanding Okta's Two-Layer Policy Model
+
+Before designing app-level policy, it is important to understand that Okta evaluates authentication through two distinct layers:
+
+**Layer 1 - Global Session Policy**
+Controls how users authenticate to Okta itself to establish a session. Applies across the entire org before any app-level policy is evaluated.
+
+**Layer 2 - Authentication Policy (App Sign-On)**
+Controls access to specific applications after the Okta session exists. This is where the AcmeCorp Global Policy lives.
+
+A common misconfiguration is building app-level policy rules without accounting for the Global Session Policy - if the Global Session Policy requires MFA before the session is established, app-level trusted network rules cannot suppress that MFA prompt. Both layers must be designed together in a production deployment.
+
+<img width="1346" height="1361" alt="Default-Global-Session-Policy" src="https://github.com/user-attachments/assets/c64c135d-a310-4b86-b3e1-e60f4d744454" />
+
+---
+
+## Policy Architecture
+
+The AcmeCorp Global Policy contains three custom rules evaluated in priority order, plus the system catch-all:
+
+```
+Priority 0  →  Trusted Network        (IP in AcmeCorp Office zone)
+Priority 1  →  Managed Device         (IP outside AcmeCorp Office zone)
+Priority 3  →  Unknown Device/External (anywhere - catch-all behaviour)
+Priority 99 →  System Catch-all       (Okta default - cannot be modified)
+```
+
+Okta evaluates rules top-to-bottom and stops at the first match. Rule order is therefore critical - the most specific conditions must sit above the most general.
+
+---
+
+## Rule Definitions
+
+### Rule 1 - Trusted Network (Priority 0)
+
+| Field | Value |
+|---|---|
+| Network Condition | IP in zone: AcmeCorp Office |
+| Factor Mode | 1FA |
+| Required Factor | Password only |
+| Reauthenticate After | 1 hour |
+
+**Business logic:** Users authenticating from the corporate network are operating in a known, controlled environment. Password-only authentication is sufficient - the network location itself provides an implicit trust signal.
+
+**API config extract:**
+```json
+"conditions": {
+  "network": {
+    "connection": "ZONE",
+    "include": ["nzo13qiz2ezkXgBNW698"]
+  }
+},
+"actions": {
+  "appSignOn": {
+    "verificationMethod": {
+      "factorMode": "1FA",
+      "constraints": [{"knowledge": {"required": true, "types": ["password"]}}]
+    }
+  }
+}
+```
+
+<img width="1676" height="591" alt="TrustedZoneRule" src="https://github.com/user-attachments/assets/a4981405-2d4e-4b6e-ab10-5c9e9e83ed65" />
+
+---
+
+### Rule 2 - Managed Device (Priority 1)
+
+| Field | Value |
+|---|---|
+| Network Condition | IP NOT in zone: AcmeCorp Office |
+| Factor Mode | 2FA |
+| Required Factors | Password + Possession factor |
+| Possession Constraint | User verification optional |
+| Reauthenticate After | 1 hour (knowledge), 2 hours (possession) |
+
+**Business logic:** Users authenticating from outside the corporate network must provide a second factor - something they physically possess - in addition to their password. This covers remote workers, home offices, and travel scenarios.
+
+**Note:** In a production environment this rule would be further split - managed devices (enrolled in MDM/Okta Device Trust) would be permitted with Okta Verify push, while unmanaged devices would require a phishing-resistant factor. MDM integration was not available in this lab environment.
+
+**API config extract:**
+```json
+"conditions": {
+  "network": {
+    "connection": "ZONE",
+    "exclude": ["nzo13qiz2ezkXgBNW698"]
+  }
+},
+"actions": {
+  "appSignOn": {
+    "verificationMethod": {
+      "factorMode": "2FA",
+      "constraints": [{
+        "knowledge": {"required": true, "types": ["password"]},
+        "possession": {"required": true, "userVerification": "OPTIONAL"}
+      }]
+    }
+  }
+}
+```
+
+<img width="1869" height="652" alt="OutOfOfficeRule" src="https://github.com/user-attachments/assets/a94f76db-25c4-4717-aebc-d44af309ac62" />
+
+---
+
+### Rule 3 - Unknown Device / External (Priority 3)
+
+| Field | Value |
+|---|---|
+| Network Condition | Anywhere |
+| Factor Mode | 1FA |
+| Required Factor | Possession only |
+| Possession Constraint | Hardware protected + Phishing resistant required |
+| Reauthenticate After | 1 hour |
+
+**Business logic:** The most restrictive rule, acting as a high-assurance catch. Requires a phishing-resistant, hardware-protected authenticator - only FIDO2/WebAuthn (passkey, hardware security key) satisfies this constraint. TOTP is explicitly excluded.
+
+**API config extract:**
+```json
+"conditions": {
+  "network": {"connection": "ANYWHERE"}
+},
+"actions": {
+  "appSignOn": {
+    "verificationMethod": {
+      "factorMode": "1FA",
+      "constraints": [{
+        "possession": {
+          "required": true,
+          "hardwareProtection": "REQUIRED",
+          "phishingResistant": "REQUIRED"
+        }
+      }]
+    }
+  }
+}
+```
+
+<img width="1683" height="842" alt="Rule3Global" src="https://github.com/user-attachments/assets/f195081b-2e7d-4e48-abd2-28594c7cdca2" />
+
+---
+
+## Testing
+
+### Test 1 - Trusted Network (Password Only)
+
+**Setup:** Real home IP address active in AcmeCorp Office zone
+
+**Expected:** Password prompt only, no MFA step
+
+**Result:** Authenticated successfully with password only - no MFA prompt presented
+
+<img width="1312" height="1101" alt="AcmeCorpTrustedNoMFA sign-on zones 2" src="https://github.com/user-attachments/assets/1a41a87b-f508-4fdd-950f-044bc0e48ddc" />
+
+---
+
+### Test 2 - Outside Trusted Zone (Password + Possession Factor)
+
+**Setup:** AcmeCorp Office zone IP temporarily set to dummy value (1.2.3.4) to simulate external network
+
+**Expected:** Password prompt followed by possession factor (Okta Verify TOTP or Passkey)
+
+**Result:** MFA prompt presented after password - Okta Verify TOTP used as second factor
+
+<img width="2520" height="1680" alt="MultiFactor App Restraint" src="https://github.com/user-attachments/assets/06e2fd77-c265-4106-b712-db21d73e1fda" />
+
+<img width="1316" height="1304" alt="AcmeCorp MFA sign-on zones 1" src="https://github.com/user-attachments/assets/14aaac20-793c-459e-902f-b80a64edf2c2" />
+
+---
+
+## Policy Export
+
+The full policy and rule configuration was exported programmatically via the Okta REST API using Python:
+
+```python
+GET /api/v1/policies?type=ACCESS_POLICY
+GET /api/v1/policies/{policy_id}/rules
+```
+
+Exported files:
+- [`configs/auth-policies.json`](../../configs/auth-policies.json) - all tenant policies
+- [`configs/acmecorp-policy-rules.json`](../../configs/acmecorp-policy-rules.json) - AcmeCorp Global Policy rules
+
+<img width="1255" height="853" alt="Policy-export-Python-execution" src="https://github.com/user-attachments/assets/e3d3b604-1e41-4965-9774-4b617c9e4039" />
+
+---
+
+## Production Considerations
+
+- Add Device Trust integration (Okta + Intune/Jamf) to enable genuine managed vs unmanaged device differentiation
+- Integrate Okta ThreatInsight to dynamically adjust risk scoring based on login behaviour
+- Set shorter reauthentication windows for sensitive financial or HR applications
+- Mandate FIDO2 for all privileged admin accounts regardless of network location
