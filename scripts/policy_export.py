@@ -2,7 +2,7 @@ import requests
 import json
 
 OKTA_DOMAIN = "https://integrator-1186065.okta.com"
-API_TOKEN = "your-api-token-here"
+API_TOKEN = "your-okta-api-token-here"
 
 headers = {
     "Authorization": f"SSWS {API_TOKEN}",
