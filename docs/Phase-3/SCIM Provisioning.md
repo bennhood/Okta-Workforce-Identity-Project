@@ -90,7 +90,7 @@ The bot was added to each department channel manually.
 
 <img width="1116" height="593" alt="MoverEngFinRobertExecutable" src="https://github.com/user-attachments/assets/ccbd3f28-9ceb-4e70-89e8-f18062371d75" />
 
-<img width="1366" height="976" alt="GroupsUsersJMLendResultOverview" src="https://github.com/user-attachments/assets/31785b84-534d-48f9-b7d0-d68a78da6ee0" />
+<img width="1349" height="897" alt="FinancenNew" src="https://github.com/user-attachments/assets/8e35975e-0a43-477d-87ab-3be5e931f69e" />
 
 <img width="1450" height="1394" alt="MoverSlackMessagePostScriptProofs1" src="https://github.com/user-attachments/assets/203875ea-4a35-4488-aef8-a16937d4db2e" />
 
