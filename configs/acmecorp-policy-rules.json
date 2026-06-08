@@ -1,0 +1,266 @@
+[
+  {
+    "id": "rul13qmjb88d5DUYt698",
+    "status": "ACTIVE",
+    "name": "Trusted Network",
+    "priority": 0,
+    "created": "2026-06-04T00:40:49.000Z",
+    "lastUpdated": "2026-06-04T00:40:49.000Z",
+    "system": false,
+    "conditions": {
+      "people": {
+        "users": {
+          "exclude": []
+        }
+      },
+      "network": {
+        "connection": "ZONE",
+        "include": [
+          "nzo13qiz2ezkXgBNW698"
+        ]
+      },
+      "riskScore": {
+        "level": "ANY"
+      },
+      "userType": {
+        "include": [],
+        "exclude": []
+      }
+    },
+    "actions": {
+      "appSignOn": {
+        "access": "ALLOW",
+        "verificationMethod": {
+          "factorMode": "1FA",
+          "type": "ASSURANCE",
+          "reauthenticateIn": "PT1H",
+          "constraints": [
+            {
+              "knowledge": {
+                "required": true,
+                "types": [
+                  "password"
+                ]
+              }
+            }
+          ]
+        },
+        "keepMeSignedIn": {
+          "postAuth": "NOT_ALLOWED"
+        }
+      }
+    },
+    "_links": {
+      "self": {
+        "href": "https://integrator-1186065.okta.com/api/v1/policies/rst13qmf3fucyfHch698/rules/rul13qmjb88d5DUYt698",
+        "hints": {
+          "allow": [
+            "GET",
+            "PUT",
+            "DELETE"
+          ]
+        }
+      },
+      "deactivate": {
+        "href": "https://integrator-1186065.okta.com/api/v1/policies/rst13qmf3fucyfHch698/rules/rul13qmjb88d5DUYt698/lifecycle/deactivate",
+        "hints": {
+          "allow": [
+            "POST"
+          ]
+        }
+      }
+    },
+    "type": "ACCESS_POLICY"
+  },
+  {
+    "id": "rul13qmlaavB8OOSX698",
+    "status": "ACTIVE",
+    "name": "Managed Device",
+    "priority": 1,
+    "created": "2026-06-04T00:42:48.000Z",
+    "lastUpdated": "2026-06-04T21:17:26.000Z",
+    "system": false,
+    "conditions": {
+      "people": {
+        "users": {
+          "exclude": []
+        }
+      },
+      "network": {
+        "connection": "ZONE",
+        "exclude": [
+          "nzo13qiz2ezkXgBNW698"
+        ]
+      },
+      "riskScore": {
+        "level": "ANY"
+      },
+      "userType": {
+        "include": [],
+        "exclude": []
+      }
+    },
+    "actions": {
+      "appSignOn": {
+        "access": "ALLOW",
+        "verificationMethod": {
+          "factorMode": "2FA",
+          "type": "ASSURANCE",
+          "reauthenticateIn": "PT1H",
+          "constraints": [
+            {
+              "knowledge": {
+                "required": true,
+                "types": [
+                  "password"
+                ],
+                "reauthenticateIn": "PT2H"
+              },
+              "possession": {
+                "required": true,
+                "userVerification": "OPTIONAL"
+              }
+            }
+          ]
+        },
+        "keepMeSignedIn": {
+          "postAuth": "NOT_ALLOWED"
+        }
+      }
+    },
+    "_links": {
+      "self": {
+        "href": "https://integrator-1186065.okta.com/api/v1/policies/rst13qmf3fucyfHch698/rules/rul13qmlaavB8OOSX698",
+        "hints": {
+          "allow": [
+            "GET",
+            "PUT",
+            "DELETE"
+          ]
+        }
+      },
+      "deactivate": {
+        "href": "https://integrator-1186065.okta.com/api/v1/policies/rst13qmf3fucyfHch698/rules/rul13qmlaavB8OOSX698/lifecycle/deactivate",
+        "hints": {
+          "allow": [
+            "POST"
+          ]
+        }
+      }
+    },
+    "type": "ACCESS_POLICY"
+  },
+  {
+    "id": "rul13qmyiqkpU8B0K698",
+    "status": "ACTIVE",
+    "name": "Unknown Device / External",
+    "priority": 3,
+    "created": "2026-06-04T00:50:20.000Z",
+    "lastUpdated": "2026-06-04T21:11:48.000Z",
+    "system": false,
+    "conditions": {
+      "people": {
+        "users": {
+          "exclude": []
+        }
+      },
+      "network": {
+        "connection": "ANYWHERE"
+      },
+      "riskScore": {
+        "level": "ANY"
+      },
+      "userType": {
+        "include": [],
+        "exclude": []
+      }
+    },
+    "actions": {
+      "appSignOn": {
+        "access": "ALLOW",
+        "verificationMethod": {
+          "factorMode": "1FA",
+          "type": "ASSURANCE",
+          "reauthenticateIn": "PT1H",
+          "constraints": [
+            {
+              "possession": {
+                "required": true,
+                "hardwareProtection": "REQUIRED",
+                "phishingResistant": "REQUIRED",
+                "userPresence": "OPTIONAL"
+              }
+            }
+          ]
+        },
+        "keepMeSignedIn": {
+          "postAuth": "NOT_ALLOWED"
+        }
+      }
+    },
+    "_links": {
+      "self": {
+        "href": "https://integrator-1186065.okta.com/api/v1/policies/rst13qmf3fucyfHch698/rules/rul13qmyiqkpU8B0K698",
+        "hints": {
+          "allow": [
+            "GET",
+            "PUT",
+            "DELETE"
+          ]
+        }
+      },
+      "deactivate": {
+        "href": "https://integrator-1186065.okta.com/api/v1/policies/rst13qmf3fucyfHch698/rules/rul13qmyiqkpU8B0K698/lifecycle/deactivate",
+        "hints": {
+          "allow": [
+            "POST"
+          ]
+        }
+      }
+    },
+    "type": "ACCESS_POLICY"
+  },
+  {
+    "id": "rul13qmf3fxGC3G6K698",
+    "status": "ACTIVE",
+    "name": "Catch-all Rule",
+    "priority": 99,
+    "created": "2026-06-04T00:35:49.000Z",
+    "lastUpdated": "2026-06-04T00:35:49.000Z",
+    "system": true,
+    "conditions": null,
+    "actions": {
+      "appSignOn": {
+        "access": "ALLOW",
+        "verificationMethod": {
+          "factorMode": "2FA",
+          "type": "ASSURANCE",
+          "reauthenticateIn": "PT12H",
+          "constraints": [
+            {
+              "possession": {
+                "required": true,
+                "deviceBound": "REQUIRED"
+              }
+            }
+          ]
+        },
+        "keepMeSignedIn": {
+          "postAuth": "NOT_ALLOWED"
+        }
+      }
+    },
+    "_links": {
+      "self": {
+        "href": "https://integrator-1186065.okta.com/api/v1/policies/rst13qmf3fucyfHch698/rules/rul13qmf3fxGC3G6K698",
+        "hints": {
+          "allow": [
+            "GET",
+            "PUT"
+          ]
+        }
+      }
+    },
+    "type": "ACCESS_POLICY"
+  }
+]
