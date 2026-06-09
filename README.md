@@ -1,4 +1,4 @@
-# Okta Workforce Identity Lab
+# Okta Workforce Identity Lab - WIP - SCIM/EntraID phase.
 
 A hands-on enterprise IAM lab environment demonstrating real-world identity and access management across SSO federation, adaptive MFA, and automated identity lifecycle management using **Okta Workforce Identity**.
 
