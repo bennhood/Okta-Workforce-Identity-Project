@@ -1,14 +1,18 @@
-# Okta Workforce Identity Lab - WIP - SCIM/EntraID phase.
+# Okta Workforce Identity Lab
 
-A hands-on enterprise IAM lab environment demonstrating real-world identity and access management across SSO federation, adaptive MFA, and automated identity lifecycle management using **Okta Workforce Identity**.
+A hands-on enterprise IAM lab environment demonstrating real-world identity and access management across SSO federation, adaptive MFA, automated identity lifecycle management, and SCIM 2.0 provisioning using **Okta Workforce Identity**.
+
+> **Status:** SCIM provisioning phase complete. Next phase: cross-platform provisioning to Microsoft Entra ID via Graph API.
 
 ---
 
 ## Overview
 
-This project simulates an enterprise identity environment for a fictitious organisation, **AcmeCorp**, across three departments: Engineering, Finance, and HR. It was built to demonstrate practical IAM skills directly mapped to enterprise requirements - from protocol-level SSO configuration and risk-based MFA policy design, through to programmatic identity lifecycle automation via the Okta REST API and Slack Bot API.
+This project simulates an enterprise identity environment for a fictitious organisation, **AcmeCorp**, across three departments: Engineering, Finance, and HR. It was built to demonstrate practical IAM skills directly mapped to enterprise requirements - from protocol-level SSO configuration and risk-based MFA policy design, through to programmatic identity lifecycle automation via the Okta REST API and a self-built SCIM 2.0 service provider.
 
-Designed to expand on and implement my Identity Access Management conceptual understanding in real-world sceanario's post securing the SC-300 certification, in efforts towards targeting Identity Access Management roles.
+Designed to expand on and implement my Identity Access Management conceptual understanding in real-world scenarios post securing the SC-300 certification, in efforts towards targeting Identity Access Management roles.
+
+The project deliberately demonstrates two distinct provisioning patterns: **vendor-API automation** (Okta REST API, Slack Bot API) and the **SCIM 2.0 standard** - the protocol enterprise Okta deployments use to provision identities into downstream applications.
 
 ---
 
@@ -25,7 +29,8 @@ Designed to expand on and implement my Identity Access Management conceptual und
 | Identity Provider | Okta Integrator Free Plan | Core IAM platform |
 | SAML SP | Salesforce Developer Edition | SAML 2.0 federation target |
 | OIDC Relying Party | Node.js Express (local) | OIDC authorization code flow |
-| Provisioning Target | Slack (free tier) | JML notification target |
+| SCIM Service Provider | Python FastAPI (local + ngrok HTTPS tunnel) | SCIM 2.0 provisioning target |
+| Notification Target | Slack (free tier) | JML notification layer |
 | HR Source | Google Sheets CSV | Mock HR system / source of truth |
 | Version Control | GitHub | This repository |
 
@@ -79,7 +84,7 @@ Built a complete Joiner/Mover/Leaver automation suite using Python and the Okta 
 | [`mover_workflow.py`](/scripts/mover_workflow.py) | Department change | Remove old group, add new group, update profile, notify both channels |
 | [`leaver_workflow.py`](/scripts/leaver_workflow.py) | User offboarded | Deactivate account (T+0), remove all groups (T+24h), notify channel, log SLA |
 
-**SCIM note:** Slack SCIM provisioning requires Business+ or Enterprise Grid. The Python + Slack Bot API implementation replicates the provisioning notification layer. In production, SCIM would handle account creation alongside the notification workflow.
+**Provisioning note:** Slack SCIM provisioning requires Business+ or Enterprise Grid, so Slack serves as the notification layer in this lab. The SCIM provisioning pattern itself is demonstrated in full in Section 5, against a SCIM 2.0 service provider built for this project.
 
 → Scripts: [`scripts/`](scripts)
 → Documentation: [`docs/identity-lifecycle/`](<docs/3. Identity Lifecycle Automation>)
@@ -103,6 +108,26 @@ All scripts handle Okta API pagination via the `Link` response header.
 
 ---
 
+### 5 - SCIM 2.0 Provisioning
+
+Built a SCIM 2.0 service provider from scratch (Python/FastAPI) and connected Okta to it as a provisioning target - demonstrating the SCIM protocol from both sides of the exchange.
+
+Okta acts as the SCIM client; the server implements the SCIM 2.0 specification endpoints Okta drives during provisioning:
+
+| Okta action | SCIM call received by the server |
+|---|---|
+| Credential test | `GET /ServiceProviderConfig`, `GET /Users?count=2` |
+| User assigned (Joiner) | `GET /Users?filter=userName eq "..."` → `POST /Users` |
+| Attribute update (Mover) | `PUT /Users/{id}` |
+| User unassigned (Leaver) | `PATCH /Users/{id}` with `active: false` |
+
+The server includes bearer-token authentication, the filter grammar Okta uses for its pre-create idempotency check, and a live dashboard logging every inbound SCIM call with its full JSON payload - captured alongside the matching Okta System Log events as end-to-end protocol evidence.
+
+→ Server: [`scim-server/`](scim-server)
+→ Documentation: [`docs/scim-provisioning/`](<docs/5. SCIM Provisioning>)
+
+---
+
 ## Key Learnings
 
 - SP-initiated SAML fails with a 400 error if the ACS URL in Okta doesn't exactly match the SP's registered endpoint - a trailing path difference (`/callback` vs `/authorization-code/callback`) is enough to break it
@@ -110,6 +135,8 @@ All scripts handle Okta API pagination via the `Link` response header.
 - Okta's two-layer policy model (Global Session Policy + App Authentication Policy) means app-level trusted network rules won't suppress MFA unless both layers are considered together
 - `UNSATISFIABLE` errors in Okta policy evaluation indicate a mismatch between what the authentication policy requires and what the enrollment policy permits - not an authentication failure
 - Okta's System Log distinguishes IdP-layer failures from SP-layer failures, enabling SSO triage without SP log access
+- SCIM clients enforce idempotency by filtering on `userName` before every create - the `GET ?filter=` → `POST` pair is the protocol's duplicate-prevention pattern, observable in the request sequence
+- Okta's two SCIM test app variants deliver credentials differently: the OAuth Bearer Token variant sends `Authorization: Bearer <token>`, while Header Auth uses a custom header scheme - an auth-scheme mismatch between client and server produces a 401 even when the token itself is correct, diagnosable by capturing the raw request rather than re-checking configuration
 
 ---
 
@@ -117,7 +144,7 @@ All scripts handle Okta API pagination via the `Link` response header.
 
 - **Terraform** - manage all Okta config as version-controlled HCL using the Okta Terraform Provider
 - **HR connector** - replace CSV import with a native Okta HR Sourcing connector (Workday, SAP SuccessFactors)
-- **SCIM provisioning** - replace Slack Bot API with SCIM 2.0 on Business+ for full account lifecycle management
+- **SCIM server hardening** - persistent storage, full RFC 7644 filter grammar, ETag versioning, `/Schemas` and `/ResourceTypes` discovery endpoints, and a stable HTTPS deployment in place of the tunnel
 - **Device Trust** - integrate Okta with Intune or Jamf for genuine managed vs unmanaged device differentiation in MFA policy
 - **OAuth 2.0 service app** - replace SSWS token auth with OAuth 2.0 client credentials for scoped, rotatable API access
 - **SIEM integration** - pipe Okta System Log to Splunk or Sentinel for real-time alerting and SLA breach detection
@@ -130,26 +157,33 @@ All scripts handle Okta API pagination via the `Link` response header.
 ```
 okta-iam-lab/
 ├── README.md
+├── .gitignore
 ├── docs/
 │   ├── architecture.png
-│   ├── protocol-decision-guide.md
-│   ├── sso-federation/
-│   │   ├── saml-salesforce-config.md
-│   │   ├── oidc-token-anatomy.md
-│   │   └── sso-troubleshooting.md
-│   ├── adaptive-mfa/
-│   │   ├── network-zones.md
-│   │   ├── authenticator-comparison.md
-│   │   └── auth-policy-design.md
-│   ├── identity-lifecycle/
-│   │   ├── attribute-mapping.md
-│   │   ├── scim-provisioning.md
-│   │   └── jml-sla.md
-│   └── api-automation/
-│       └── api-scripts.md
+│   ├── Protocol Decision Guide.md
+│   ├── 1. SSO Federation/
+│   │   ├── 1. SAML Salesforce Config.md
+│   │   ├── 2. OIDC Token Anatomy.md
+│   │   └── 3. SSO Troubleshooting.md
+│   ├── 2. Adaptive MFA/
+│   │   ├── 1. Network Zones.md
+│   │   ├── 2. Authenticator Comparison.md
+│   │   └── 3. Auth Policy Design.md
+│   ├── 3. Identity Lifecycle Automation/
+│   │   ├── 1. Attribute Mapping.md
+│   │   ├── 2. SCIM Provisioning.md
+│   │   └── 3. JML Service Level Agreement (SLA).md
+│   ├── 4. API Automation/
+│   │   └── API Scripts.md
+│   └── 5. SCIM Provisioning/
+│       └── SCIM-Provisioning.md
 ├── configs/
 │   ├── auth-policies.json
 │   └── acmecorp-policy-rules.json
+├── scim-server/
+│   ├── scim_server.py
+│   ├── requirements.txt
+│   └── README.md
 └── scripts/
     ├── create_users_from_csv.py
     ├── policy_export.py
@@ -167,6 +201,7 @@ okta-iam-lab/
 - [Okta Workforce Identity](https://developer.okta.com) - Integrator Free Plan
 - [Salesforce Developer Edition](https://developer.salesforce.com)
 - [Slack](https://slack.com) - Free tier + Bot API
-- Python 3.11 - `requests`, `csv`, `json`
+- Python 3.11 - `requests`, `csv`, `json`, `FastAPI`, `uvicorn`
+- [ngrok](https://ngrok.com) - HTTPS tunnel for the SCIM service provider
 - Node.js / Express - Okta OIDC sample app
 - [draw.io](https://app.diagrams.net) - Architecture diagram
