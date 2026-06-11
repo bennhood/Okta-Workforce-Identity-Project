@@ -111,8 +111,8 @@ the protocol.
 <img width="2520" height="604" alt="SCIM Empty Call" src="https://github.com/user-attachments/assets/50a8674e-df9e-48df-86f5-d88b35e9a00c" />
 <img width="2462" height="1264" alt="SCIMAssignFirstUser" src="https://github.com/user-attachments/assets/93b3467d-1bac-4679-86aa-3a1606c6a0b2" />
 <img width="2427" height="1450" alt="SCIMMultipleUsers" src="https://github.com/user-attachments/assets/dc6ee1f5-3625-493c-b657-e450a3fe4260" />
-<img width="1356" height="1375" alt="SCIMUserRemove1" src="https://github.com/user-attachments/assets/2a0af457-ea6b-42e5-94c4-3d1ab0c217d9" />
 <img width="2413" height="609" alt="UnassignedUsers" src="https://github.com/user-attachments/assets/1b080bde-8794-4100-8004-552179afc39f" />
+<img width="1356" height="1375" alt="SCIMUserRemove1" src="https://github.com/user-attachments/assets/2a0af457-ea6b-42e5-94c4-3d1ab0c217d9" />
 <img width="1348" height="1351" alt="SCIMUserProv1" src="https://github.com/user-attachments/assets/2e0cc70d-61b6-40d0-a0ba-a4afda1defa5" />
 <img width="1368" height="1382" alt="Logs 2 SCIM evidence" src="https://github.com/user-attachments/assets/2db88aa1-d1e8-441e-b5d2-832070eb1842" />
 
