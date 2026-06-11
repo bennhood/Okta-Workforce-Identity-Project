@@ -18,7 +18,7 @@ The project deliberately demonstrates two distinct provisioning patterns: **vend
 
 ## Architecture
 
-<img width="1347" height="1145" alt="scrnli_78dX0IR0KK8Vvh" src="https://github.com/user-attachments/assets/121ac404-7add-439b-993c-b676aa312b96" />
+<img width="1380" height="1106" alt="Architecture" src="https://github.com/user-attachments/assets/97102639-db0b-40bd-9283-c306eff90e5d" />
 
 ---
 
