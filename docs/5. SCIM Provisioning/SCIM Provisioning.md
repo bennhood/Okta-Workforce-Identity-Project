@@ -108,7 +108,7 @@ the protocol.
 ## Evidence
 
 <!-- Screenshots -->
-<img width="2520" height="1680" alt="SCIM Empty Call" src="https://github.com/user-attachments/assets/a397f89f-0f1d-43e4-952b-dd60233de9b4" />
+<img width="2520" height="604" alt="SCIM Empty Call" src="https://github.com/user-attachments/assets/50a8674e-df9e-48df-86f5-d88b35e9a00c" />
 <img width="2462" height="1264" alt="SCIMAssignFirstUser" src="https://github.com/user-attachments/assets/93b3467d-1bac-4679-86aa-3a1606c6a0b2" />
 <img width="2427" height="1450" alt="SCIMMultipleUsers" src="https://github.com/user-attachments/assets/dc6ee1f5-3625-493c-b657-e450a3fe4260" />
 <img width="1356" height="1375" alt="SCIMUserRemove1" src="https://github.com/user-attachments/assets/2a0af457-ea6b-42e5-94c4-3d1ab0c217d9" />
