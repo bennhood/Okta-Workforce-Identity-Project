@@ -123,7 +123,7 @@ Okta acts as the SCIM client; the server implements the SCIM 2.0 specification e
 
 The server includes bearer-token authentication, the filter grammar Okta uses for its pre-create idempotency check, and a live dashboard logging every inbound SCIM call with its full JSON payload - captured alongside the matching Okta System Log events as end-to-end protocol evidence.
 
-→ Server: [`scim-server/`](scim-server)
+→ Server: [`scim-server/`](<scim server>)
 → Documentation: [`docs/scim-provisioning/`](<docs/5. SCIM Provisioning>)
 
 ---
