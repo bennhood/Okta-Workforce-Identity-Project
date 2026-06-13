@@ -157,7 +157,6 @@ The server includes bearer-token authentication, the filter grammar Okta uses fo
 ```
 okta-iam-lab/
 ├── README.md
-├── .gitignore
 ├── docs/
 │   ├── architecture.png
 │   ├── Protocol Decision Guide.md
