@@ -1,7 +1,7 @@
 # Entra ID JML Walkthrough - Run Sequence & Evidence
 
 This document walks the full joiner/mover/leaver lifecycle across Okta and
-Microsoft Entra ID as executed against live tenants (June 2026), with the
+Microsoft Entra ID as executed against live tenants (July 2026), with the
 expected output at each stage and the screenshot evidence that accompanies
 each step. Terminal excerpts are from the actual runs.
 
