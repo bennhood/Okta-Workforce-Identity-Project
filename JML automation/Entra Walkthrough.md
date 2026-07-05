@@ -126,7 +126,7 @@ stages, deliberately not automated.
   Slack notification sent to #hr-staff
 ```
 
-<img width="1423" height="1512" alt="Leavers" src="https://github.com/user-attachments/assets/cd1a22d6-0c55-4a40-98c8-be4f12d0a528" />
+<img width="1423" height="780" alt="Leavers" src="https://github.com/user-attachments/assets/6e786dc9-7d16-4140-a3a4-fae1666761e8" />
 <img width="1902" height="1483" alt="Leavers PORTALs" src="https://github.com/user-attachments/assets/768b7340-b55b-4480-9bcd-00cb29781147" />
 <img width="1155" height="549" alt="Leavers SlackNotifs" src="https://github.com/user-attachments/assets/bd8cce95-afac-4067-9b47-8d28446ef06c" />
 
