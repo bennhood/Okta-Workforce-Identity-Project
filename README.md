@@ -2,7 +2,7 @@
 
 A hands-on enterprise IAM lab environment demonstrating real-world identity and access management across SSO federation, adaptive MFA, automated identity lifecycle management, and SCIM 2.0 provisioning using **Okta Workforce Identity**.
 
-> **Status:** Complete. Auditing and reporting scripts (access report and stale accounts) to be finetuned and added at a later date.
+> **Status:** Complete. Architecture map needs updating. Auditing and reporting scripts (access report and stale accounts) to be finetuned and added at a later date.
 
 ---
 
