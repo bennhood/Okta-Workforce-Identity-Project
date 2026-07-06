@@ -2,7 +2,7 @@
 
 A hands-on enterprise IAM lab environment demonstrating real-world identity and access management across SSO federation, adaptive MFA, automated identity lifecycle management, and SCIM 2.0 provisioning using **Okta Workforce Identity**.
 
-> **Status:** SCIM provisioning phase complete. Next phase/Second part: cross-platform provisioning to Microsoft Entra ID via Graph API.
+> **Status:** Complete. Auditing and reporting scripts (access report and stale accounts) to be finetuned and added at a later date.
 
 ---
 
