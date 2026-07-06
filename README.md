@@ -2,7 +2,7 @@
 
 A hands-on enterprise IAM lab environment demonstrating real-world identity and access management across SSO federation, adaptive MFA, automated identity lifecycle management, and SCIM 2.0 provisioning using **Okta Workforce Identity**.
 
-> **Status:** Complete. Architecture map needs updating. Auditing and reporting scripts (access report and stale accounts) to be finetuned and added at a later date.
+> **Status:** Complete. Auditing and reporting scripts (access report and stale accounts) to be finetuned and added at a later date.
 
 ---
 
@@ -18,7 +18,7 @@ The project deliberately demonstrates two distinct provisioning patterns: **vend
 
 ## Architecture
 
-<img width="1386" height="1093" alt="Architecture" src="https://github.com/user-attachments/assets/df7133be-a5d2-4f50-8820-c7b7564d106c" />
+<img width="1226" height="1186" alt="arc" src="https://github.com/user-attachments/assets/526ed727-fdd7-49c4-a084-89535ad47136" />
 
 ---
 
@@ -71,7 +71,7 @@ Policy configuration exported as JSON via the Okta REST API - committed to [`con
 
 ### 3 - Identity Lifecycle Automation (JML)
 
-Built a complete Joiner/Mover/Leaver automation suite using Python and the Okta REST API, with Slack Bot API for provisioning notifications.
+Built a complete Joiner/Mover/Leaver automation suite using Python, the Okta REST API, and the Microsoft Graph API, with Slack Bot API for provisioning notifications.
 
 **HR source:** Google Sheets CSV simulating a Workday/SAP SuccessFactors feed - 7 users across Engineering, Finance, and HR.
 
@@ -79,10 +79,9 @@ Built a complete Joiner/Mover/Leaver automation suite using Python and the Okta 
 
 | Script | Trigger | Actions |
 |---|---|---|
-| [`create_users_from_csv.py`](scripts/create_users_from_csv.py) | Manual / HR import | Create Okta users, assign to department groups |
-| [`joiner_workflow.py`](/scripts/joiner_workflow.py) | New active user detected | Post provisioning notification to department Slack channel |
-| [`mover_workflow.py`](/scripts/mover_workflow.py) | Department change | Remove old group, add new group, update profile, notify both channels |
-| [`leaver_workflow.py`](/scripts/leaver_workflow.py) | User offboarded | Deactivate account (T+0), remove all groups (T+24h), notify channel, log SLA |
+| [`joiner_workflow.py`](<docs/JML automation/joiner_workflow.py>) | New active user detected | Provision to Entra ID, assign security group, set manager relationship, notify department Slack channel |
+| [`mover_workflow.py`](<docs/JML automation/mover_workflow.py>) | Department change | Swap groups (old removed before new granted) and update department in both Okta and Entra ID, notify both channels |
+| [`leaver_workflow.py`](<docs/JML automation/leaver_workflow.py>) | User offboarded | T+0: deactivate Okta, disable Entra account, revoke Entra sessions and refresh tokens, notify channel; T+24h/T+30d documented as SLA |
 
 **Provisioning note:** Slack SCIM provisioning requires Business+ or Enterprise Grid, so Slack serves as the notification layer in this lab. The SCIM provisioning pattern itself is demonstrated in full in Section 5, against a SCIM 2.0 service provider built for this project.
 
@@ -125,6 +124,52 @@ The server includes bearer-token authentication, the filter grammar Okta uses fo
 
 → Server: [`scim-server/`](<scim server>)
 → Documentation: [`docs/scim-provisioning/`](<docs/5. SCIM Provisioning>)
+
+---
+
+### 6 - Cross-Directory Provisioning & Reconciliation (Microsoft Entra ID)
+
+Extended the JML automation across a second directory: users, security
+groups, and manager relationships provisioned into Microsoft Entra ID via
+the Microsoft Graph API, replicating the Okta-to-Entra provisioning path an
+enterprise would run through a managed SCIM connector or IGA platform -
+built by hand here precisely because the managed connector is not available
+on the lab tier.
+
+**Graph API client (`entra_sync.py`)** - OAuth 2.0 client credentials flow
+with token caching and mid-run 401 refresh; a central request handler
+enforcing timeouts, Retry-After-honouring 429 backoff, and exponential 5xx
+retry; per-user random temporary passwords; conflict detection keyed on
+Graph error codes; eventual-consistency retry on reads immediately after
+writes. Manager assignment is handled correctly as a directory relationship
+(`manager/$ref`), not a create-payload field.
+
+| Lifecycle stage | Graph API actions |
+|---|---|
+| Joiner | `POST /users`, group membership via `$ref`, manager via `manager/$ref` |
+| Mover | `PATCH /users/{upn}` department, group swap (remove then add) |
+| Leaver (T+0) | `PATCH accountEnabled: false` + `POST revokeSignInSessions` - disabling alone leaves issued tokens valid until expiry |
+
+**Bulk reconciliation (`entra_reconcile.py`)** - the scale-pattern
+counterpart to the per-event scripts: reads desired state from Okta
+(paginated) and actual state from Entra (users + group memberships), diffs
+in memory, and applies only the delta via Graph `$batch` (20 operations per
+call, with per-sub-request 429/5xx retry - Graph does not retry throttled
+requests inside a batch). Dry-run by default; destructive changes gated by
+a disable-count circuit breaker; guests and protected accounts excluded
+from managed scope at the read layer. A converged tenant produces an empty
+plan and zero write calls.
+
+The full lifecycle was executed end to end against live tenants, closing
+with an empty reconciliation plan as convergence proof. Three defects were
+found and fixed during validation - a lifecycle-state filtering gap, a
+`requests` truthiness bug that made the conflict handler unreachable, and a
+reconciler dry run that proposed disabling the tenant admin account - each
+documented with root cause and fix.
+
+→ Scripts: [`JML automation/`](<docs/JML automation>)
+→ Design decisions and known limitations: [`DESIGN-DECISIONS.md`](<docs/Design Decisions.md>)
+→ Run sequence and evidence: [`WALKTHROUGH-ENTRA.md`](<docs/JML automation/Entra Walkthrough.md>)
 
 ---
 
@@ -179,10 +224,19 @@ okta-iam-lab/
 ├── configs/
 │   ├── auth-policies.json
 │   └── acmecorp-policy-rules.json
-├── scim-server/
+├── scim server/
 │   ├── scim_server.py
 │   ├── requirements.txt
 │   └── README.md
+├── JML automation
+│   ├── .env.example
+│   ├── Design Decisions.md
+│   ├── Entra Walkthrough.md
+│   ├── entra_reconcile.py
+│   ├── entra_sync.py
+│   ├── joiner_workflow.py
+│   ├── leaver_workflow.py
+│   └── mover_workflow.py
 └── scripts/
     ├── create_users_from_csv.py
     ├── policy_export.py
@@ -200,6 +254,7 @@ okta-iam-lab/
 - [Okta Workforce Identity](https://developer.okta.com) - Integrator Free Plan
 - [Salesforce Developer Edition](https://developer.salesforce.com)
 - [Slack](https://slack.com) - Free tier + Bot API
+- [Entra / Azure] - Pay-as-you-go
 - Python 3.11 - `requests`, `csv`, `json`, `FastAPI`, `uvicorn`
 - [ngrok](https://ngrok.com) - HTTPS tunnel for the SCIM service provider
 - Node.js / Express - Okta OIDC sample app
