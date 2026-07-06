@@ -167,9 +167,9 @@ found and fixed during validation - a lifecycle-state filtering gap, a
 reconciler dry run that proposed disabling the tenant admin account - each
 documented with root cause and fix.
 
-→ Scripts: [`JML automation/`](<docs/JML automation>)
-→ Design decisions and known limitations: [`DESIGN-DECISIONS.md`](<docs/Design Decisions.md>)
-→ Run sequence and evidence: [`WALKTHROUGH-ENTRA.md`](<docs/JML automation/Entra Walkthrough.md>)
+→ Scripts: [`JML automation/`](</JML automation>)
+→ Design decisions and known limitations: [`Design Decisions.md`](</JML automation/Design Decisions.md>)
+→ Run sequence and evidence: [`Entra Walkthrough.md`](</JML automation/Entra Walkthrough.md>)
 
 ---
 
