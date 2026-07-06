@@ -8,11 +8,11 @@ A hands-on enterprise IAM lab environment demonstrating real-world identity and 
 
 ## Overview
 
-This project simulates an enterprise identity environment for a fictitious organisation, **AcmeCorp**, across three departments: Engineering, Finance, and HR. It was built to demonstrate practical IAM skills directly mapped to enterprise requirements - from protocol-level SSO configuration and risk-based MFA policy design, through to programmatic identity lifecycle automation via the Okta REST API and a self-built SCIM 2.0 service provider.
+This project simulates an enterprise identity environment for a fictitious organisation, AcmeCorp, across three departments: Engineering, Finance, and HR. It was built to demonstrate practical IAM skills directly mapped to enterprise requirements - from protocol-level SSO configuration and risk-based MFA policy design, through to programmatic identity lifecycle automation across two directories (Okta and Microsoft Entra ID) and a self-built SCIM 2.0 service provider.
 
 Designed to expand on and implement my Identity Access Management conceptual understanding in real-world scenarios post securing the SC-300 certification, in efforts towards targeting Identity Access Management roles.
 
-The project deliberately demonstrates two distinct provisioning patterns: **vendor-API automation** (Okta REST API, Slack Bot API) and the **SCIM 2.0 standard** - the protocol enterprise Okta deployments use to provision identities into downstream applications.
+The project deliberately demonstrates three distinct provisioning patterns: vendor-API automation (Okta REST API, Slack Bot API), the SCIM 2.0 standard - the protocol enterprise Okta deployments use to provision identities into downstream applications - and Microsoft Graph API automation into Entra ID, including a reconciliation engine that converges directory drift. Design decisions, known limitations, and defects found during live validation are documented in [`Design Decisions.md`](</JML automation/Design Decisions.md>)
 
 ---
 
@@ -27,9 +27,11 @@ The project deliberately demonstrates two distinct provisioning patterns: **vend
 | Component | Platform | Role |
 |---|---|---|
 | Identity Provider | Okta Integrator Free Plan | Core IAM platform |
+| Target Directory | Microsoft Entra ID (Pay-As-You-Go tenant) | Cross-directory provisioning target via Microsoft Graph API |
 | SAML SP | Salesforce Developer Edition | SAML 2.0 federation target |
 | OIDC Relying Party | Node.js Express (local) | OIDC authorization code flow |
 | SCIM Service Provider | Python FastAPI (local + ngrok HTTPS tunnel) | SCIM 2.0 provisioning target |
+| Reconciliation | Python ([`entra_reconcile.py`](</JML automation/entra_reconcile.py>)) | Okta-to-Entra drift detection and convergence |
 | Notification Target | Slack (free tier) | JML notification layer |
 | HR Source | Google Sheets CSV | Mock HR system / source of truth |
 | Version Control | GitHub | This repository |
