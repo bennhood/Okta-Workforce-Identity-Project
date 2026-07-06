@@ -26,7 +26,7 @@ The project deliberately demonstrates three distinct provisioning patterns: vend
 
 | Component | Platform | Role |
 |---|---|---|
-| Identity Provider | Okta Integrator Free Plan | Core IAM platform |
+| Identity Provider | Okta Integrator Free Plan | Core IAM platform - source of truth |
 | Target Directory | Microsoft Entra ID (Pay-As-You-Go tenant) | Cross-directory provisioning target via Microsoft Graph API |
 | SAML SP | Salesforce Developer Edition | SAML 2.0 federation target |
 | OIDC Relying Party | Node.js Express (local) | OIDC authorization code flow |
