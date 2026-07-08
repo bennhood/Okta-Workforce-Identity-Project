@@ -131,12 +131,7 @@ The server includes bearer-token authentication, the filter grammar Okta uses fo
 
 ### 6 - Cross-Directory Provisioning & Reconciliation (Microsoft Entra ID)
 
-Extended the JML automation across a second directory: users, security
-groups, and manager relationships provisioned into Microsoft Entra ID via
-the Microsoft Graph API, replicating the Okta-to-Entra provisioning path an
-enterprise would run through a managed SCIM connector or IGA platform -
-built by hand here precisely because the managed connector is not available
-on the lab tier.
+The second iteration of the JML suite from Section 3 - the lifecycle extended into a second directory: users, security groups, and manager relationships provisioned into Microsoft Entra ID via the Microsoft Graph API, replicating the Okta-to-Entra provisioning path an enterprise would run through a managed SCIM connector or IGA platform - built by hand here precisely because the managed connector is not available on the lab tier.
 
 **Graph API client (`entra_sync.py`)** - OAuth 2.0 client credentials flow
 with token caching and mid-run 401 refresh; a central request handler
