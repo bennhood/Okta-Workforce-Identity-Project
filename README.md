@@ -73,7 +73,7 @@ Policy configuration exported as JSON via the Okta REST API - committed to [`con
 
 ### 3 - Identity Lifecycle Automation (JML)
 
-Built a complete Joiner/Mover/Leaver automation suite using Python, the Okta REST API, and the Microsoft Graph API, with Slack Bot API for provisioning notifications.
+Built a complete Joiner/Mover/Leaver automation suite in Python against the Okta REST API, with the Slack Bot API providing provisioning notifications - the first iteration of the lifecycle work in this lab, later extended cross-directory in Section 6.
 
 **HR source:** Google Sheets CSV simulating a Workday/SAP SuccessFactors feed - 7 users across Engineering, Finance, and HR.
 
@@ -81,9 +81,9 @@ Built a complete Joiner/Mover/Leaver automation suite using Python, the Okta RES
 
 | Script | Trigger | Actions |
 |---|---|---|
-| [`joiner_workflow.py`](</JML automation/joiner_workflow.py>) | New active user detected | Provision to Entra ID, assign security group, set manager relationship, notify department Slack channel |
-| [`mover_workflow.py`](</JML automation/mover_workflow.py>) | Department change | Swap groups (old removed before new granted) and update department in both Okta and Entra ID, notify both channels |
-| [`leaver_workflow.py`](</JML automation/leaver_workflow.py>) | User offboarded | T+0: deactivate Okta, disable Entra account, revoke Entra sessions and refresh tokens, notify channel; T+24h/T+30d documented as SLA |
+| [`joiner_workflow.py`](</scripts/joiner_workflow.py>) | New active user detected | Provision Okta user, assign groups, notify department Slack channel |
+| [`mover_workflow.py`](</scripts/mover_workflow.py>) | Department change | Swap groups (old removed before new granted), update department, notify both channels |
+| [`leaver_workflow.py`](</scripts/leaver_workflow.py>) | User offboarded | T+0: deactivate Okta account, notify channel; T+24h/T+30d documented as SLA |
 
 **Provisioning note:** Slack SCIM provisioning requires Business+ or Enterprise Grid, so Slack serves as the notification layer in this lab. The SCIM provisioning pattern itself is demonstrated in full in Section 5, against a SCIM 2.0 service provider built for this project.
 
